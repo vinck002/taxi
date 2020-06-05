@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using taxi.web.Data;
@@ -22,7 +23,7 @@ namespace taxi.web.Controllers
             return View(await _context.Taxis.ToListAsync());
         }
 
-        // GET: Taxis/Details/5
+   // GET: Taxis/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -57,8 +58,26 @@ namespace taxi.web.Controllers
             {
                 taxiEntity.Plaque = taxiEntity.Plaque.ToUpper();
                 _context.Add(taxiEntity);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+
+                try
+                {
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (Exception ex)
+                {
+                    if (ex.InnerException.Message.Contains("duplicate"))
+                    {
+                        ModelState.AddModelError(string.Empty, "Already Exist a Taxi With the same Plaque");
+
+                    }
+                    else
+                    {
+                        ModelState.AddModelError(string.Empty, ex.InnerException.Message);
+                    }
+                    
+                  
+                }
             }
             return View(taxiEntity);
         }
@@ -95,8 +114,25 @@ namespace taxi.web.Controllers
             {
                 taxiEntity.Plaque = taxiEntity.Plaque.ToUpper();
                     _context.Update(taxiEntity);
-                    await _context.SaveChangesAsync();             
+                try
+                {
+                    await _context.SaveChangesAsync();
                     return RedirectToAction(nameof(Index));
+                }
+                catch (Exception ex)
+                {
+                    if (ex.InnerException.Message.Contains("duplicate"))
+                    {
+                        ModelState.AddModelError(string.Empty, "Already Exist a Taxi With the same Plaque");
+
+                    }
+                    else
+                    {
+                        ModelState.AddModelError(string.Empty, ex.InnerException.Message);
+                    }
+
+
+                }
             }
             return View(taxiEntity);
         }
